@@ -1,8 +1,9 @@
 # -*- Coding = UTF-8 -*-
 # Author: Nico
-# File: RentHouse.py
+# File: spider_rent_house.py
 # Software: PyCharm
 # Time: 2024/1/20 15:35
+
 
 import re
 import time
@@ -13,30 +14,24 @@ from bs4 import BeautifulSoup
 
 
 def main():
-    baseurl = "https://bj.lianjia.com/zufang/chaoyang/pg"
+    baseurl = 'https://bj.lianjia.com/zufang/chaoyang/pg'
     columns = ['小区', '区域', '面积', '价格', '朝向', '户型', '详情链接']
-
     # 创建DataFrame
     all_data = pd.DataFrame(columns=columns)
-
     for i in range(1, 100):
         print(f'正在爬取第{i}页数据...')
         time.sleep(1)
         url = baseurl + str(i)
         datalist = getdata(url)
-
         if not datalist:
             print(f'第{i}页数据为空，爬取结束！')
             break
-
         df = pd.DataFrame(datalist, columns=columns)
         # 将当前页数据追加到总的数据中
         all_data = all_data.append(df, ignore_index=True)
-
     # 将所有数据保存到一个Excel文件
-    all_data.to_excel('Data.xlsx', index=False)
-
-    print("爬取完毕！")
+    all_data.to_excel('data_rent_house.xlsx', index=False)
+    print('爬取完毕！')
 
 
 # 定义正则表达式
@@ -55,9 +50,8 @@ findlink1 = re.compile(r'<a href="/apartment/(.*?).html" target="_blank">', re.S
 def getdata(url):
     datalist = []
     html = askurl(url)
-    soup = BeautifulSoup(html, "html.parser")
-
-    for item in soup.find_all('div', class_="content__list--item--main"):
+    soup = BeautifulSoup(html, 'html.parser')
+    for item in soup.find_all('div', class_='content__list--item--main'):
         data = []
         item = str(item)
         try:
@@ -95,26 +89,25 @@ def getdata(url):
             link = 'https://sh.lianjia.com/apartment/' + re.findall(findlink1, item)[0] + '.html'
             data.append(link)
         datalist.append(data)
-
     return datalist
 
 
 def askurl(url):
     head = {
-        "User-Agent": "Mozilla / 5.0(Windows NT 10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 99.0.4844.51Safari / 537.36"
+        'User-Agent': 'Mozilla / 5.0(Windows NT 10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 99.0.4844.51Safari / 537.36'
     }
     request = urllib.request.Request(url, headers=head)
-    html = ""
+    html = ''
     try:
         response = urllib.request.urlopen(request)
-        html = response.read().decode("utf-8")
+        html = response.read().decode('utf-8')
     except urllib.error.URLError as e:
-        if hasattr(e, "code"):
+        if hasattr(e, 'code'):
             print(e.code)
-        if hasattr(e, "reason"):
+        if hasattr(e, 'reason'):
             print(e.reason)
     return html
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
